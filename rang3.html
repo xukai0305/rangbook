@@ -397,9 +397,6 @@
             align-items: center;
             flex-wrap: wrap;
         }
-        .lang-row select {
-            flex: 1;
-        }
         .arrow-icon {
             font-size: 1.2rem;
             color: steelblue;
@@ -421,7 +418,7 @@
     </div>
     
     <div class="card">
-        <div class="row">
+        <div class="row lang-row">
             <label>원문 언어</label>
             <select id="langSelect">
                 <option value="zh">中文 (중국어)</option>
@@ -521,6 +518,7 @@
     lucide.createIcons();
 
     // ================= JSONbin 설정 =================
+    // 아까 성공했던 Master Key를 사용하세요!
     const JSONBIN_API_KEY = "$2a$10$kyM0i2AIc0Mq.sM9MspFjuXQ2kVOxY.8t0Bk7OOFQZkO9y1kH3ZSi";
     let currentBinId = localStorage.getItem('langbook_bin_id') || "69d5342136566621a88a3c07";
 
@@ -540,7 +538,6 @@
         } else { return ''; }
     }
 
-    // 단어 추출 함수 (최대 10개)
     const STOP_WORDS = new Set([
         '的', '了', '是', '在', '我', '你', '他', '她', '它', '我们', '你们', '这', '那', '有', '和',
         'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not',
@@ -591,7 +588,7 @@
     const STORAGE_KEY = 'langbook_data';
     let currentFontFamily = "'Noto Sans CJK KR', 'Noto Sans CJK SC', 'Malgun Gothic'";
     let currentLang = 'zh';
-    let currentTargetLang = 'ko';  // 추가: 번역 대상 언어
+    let currentTargetLang = 'ko';
     let currentPage = 1;
     let currentModalBlock = null;
     let currentSearchTerm = '';
@@ -885,6 +882,11 @@
         }
     }
 
+    function getLangName(code) {
+        const names = { zh: '중국어', en: '영어', ja: '일본어', ko: '한국어' };
+        return names[code] || code;
+    }
+
     async function createNewBlock() {
         const text = document.getElementById('newOriginal').value.trim();
         if (!text) { alert('문장을 입력하세요'); return; }
@@ -902,7 +904,7 @@
             original: text,
             pronunciation: getPronunciation(text, lang),
             translation: translation,
-            targetLang: targetLang,  // 어떤 언어로 번역했는지 저장
+            targetLang: targetLang,
             words: extractWords(text, lang),
             writingLines: lines,
             opacity: opacity,
@@ -916,11 +918,6 @@
         updatePreview();
         saveToLocal();
         showToast('새 블록이 생성되었습니다.');
-    }
-
-    function getLangName(code) {
-        const names = { zh: '중국어', en: '영어', ja: '일본어', ko: '한국어' };
-        return names[code] || code;
     }
 
     function saveToLocal() { 
@@ -962,14 +959,11 @@
         reader.readAsText(file);
     }
 
-    // 수정된 번역 함수 (대상 언어 선택 가능)
+    // 번역 함수 (대상 언어 선택 가능)
     async function autoTranslate(text, fromLang, toLang) {
         if (!text || !text.trim()) return '';
-        
-        // 같은 언어면 번역 안 함
         if (fromLang === toLang) return text;
         
-        // 언어 코드 매핑 (MyMemory API 형식)
         const langMap = { zh: 'zh', ja: 'ja', en: 'en', ko: 'ko' };
         const from = langMap[fromLang] || 'zh';
         const to = langMap[toLang] || 'ko';
